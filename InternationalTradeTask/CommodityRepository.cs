@@ -30,7 +30,7 @@ namespace TestTasks.InternationalTradeTask
                     }
                     else
                     {
-                        return GetTarifFromRootGroup(isExportTarif, rootGroup);
+                        return GetTarifFromRootGroup(rootGroup, isExportTarif);
                     }
                 }
             }
@@ -38,17 +38,15 @@ namespace TestTasks.InternationalTradeTask
             throw new ArgumentException("Commodity not found in the repository.");
         }
 
-        private double GetTarifFromRootGroup(bool isExportTarif, ICommodityGroup rootGroup)
+        private double GetTarifFromRootGroup(FullySpecifiedCommodityGroup rootGroup, bool isExportTarif)
         {
             if (isExportTarif)
             {
-                //Not checking for null, because in the FullySpecifiedCommodityGroup constructor, exportTarif cannot be null
-                return rootGroup.ExportTarif.Value;
+                return rootGroup.ExportTarif!.Value;
             }
             else
             {
-                //Not checking for null, because in the FullySpecifiedCommodityGroup constructor, importTarif cannot be null
-                return rootGroup.ImportTarif.Value;
+                return rootGroup.ImportTarif!.Value;
             }
         }
 
@@ -63,7 +61,7 @@ namespace TestTasks.InternationalTradeTask
 
             if (group.SubGroups is not null)
             {
-                tarif = AssignTarif(group, isExportTarif);
+                tarif = AssignTarifIfNotNull(group, isExportTarif, tarif);
 
                 foreach (var subGroup in group.SubGroups)
                 {
@@ -84,24 +82,12 @@ namespace TestTasks.InternationalTradeTask
             {
                 return group.ExportTarif;
             }
-            else if (group.ImportTarif is not null)
+            else if (!isExportTarif && group.ImportTarif is not null)
             {
                 return group.ImportTarif;
             }
 
             return tarif;
-        }
-
-        private double? AssignTarif(ICommodityGroup group, bool isExportTarif)
-        {
-            if (isExportTarif)
-            {
-                return group.ExportTarif;
-            }
-            else
-            {
-                return group.ImportTarif;
-            }
         }
 
         private FullySpecifiedCommodityGroup[] _allCommodityGroups = new FullySpecifiedCommodityGroup[]
